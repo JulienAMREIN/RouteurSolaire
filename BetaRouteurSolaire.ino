@@ -1,9 +1,10 @@
-// EmonLibrary examples openenergymonitor.org, Licence GNU GPL V3
+// Routeur Solaire - V0.1 - Julien AMREIN, Licence GNU GPL V3
 
-#include "EmonLib.h"             // Include Emon Library
-EnergyMonitor emon1;             // Create an instance
-int valeurLedDimmer = 1;
-int ledPin = 9;
+#include "EmonLib.h"
+EnergyMonitor emon1;
+byte valeurLedDimmer = 0;
+byte valeurMaximumLed = 25;
+byte ledPin = 9;
 
 void setup()
 {  
@@ -16,6 +17,8 @@ void setup()
 
 void loop()
 {
+  //------------------------------------------------------------------------------------------------------------Calculs EmonLib
+
   emon1.calcVI(20,500);         // Calculate all. No.of half wavelengths (crossings), time-out
 
   float realPower       = emon1.realPower;        //extract Real Power into variable
@@ -24,41 +27,59 @@ void loop()
   float supplyVoltage   = emon1.Vrms;             //extract Vrms into Variable
   float Irms            = emon1.Irms;             //extract Irms into Variable
 
+  //------------------------------------------------------------------------------------------------------------Affichage sur le moniteur série pour controle sera effacé sur la version finale
+
+  if (realPower > 0) // Si on consomme du courant depuis EDF
+  {
+    Serial.print("On consomme du courant depuis EDF     ");
+  }
+
+  if (realPower < 0) // Si on injecte du courant vers EDF
+  {
+    Serial.print("On injecte du courant vers EDF        ");
+  }
+
+  if (realPower == 0) // Si on est neutre sur la consommation EDF
+  {
+    Serial.print("Point d equilibre par rapport a EDF   ");
+  }
+
   Serial.print(realPower);	       // Puissance apparente
   Serial.print(" signe          ");
-  Serial.print(Irms);		       // Irms
+  Serial.print(Irms);
   Serial.print(" Amperes        ");
-  Serial.print(valeurLedDimmer);
-  Serial.println(" valeur de la led");
-  
- 
-//------------------------------------------------------------------------------------------------------------
+  Serial.print(" valeur de la led");
+  Serial.println(valeurLedDimmer);
+
+  //------------------------------------------------------------------------------------------------------------
   if (realPower > 0) // Si on consomme du courant depuis EDF, on diminue la puissance autorisée dans le dimmer
   {
     if(valeurLedDimmer > 0)
     {
       valeurLedDimmer -= 1;
       analogWrite(ledPin, valeurLedDimmer);
-
     }
-
   }
 
 
   if (realPower < 0) // Si on injecte du courant vers EDF,on augmente la puissance autorisée dans le dimmer
   {
-    if(valeurLedDimmer <= 25)
+    if(valeurLedDimmer <= valeurMaximumLed)
     {
       valeurLedDimmer += 1;
       analogWrite(ledPin, valeurLedDimmer);
-
     }
-
   }
 
-//------------------------------------------------------------------------------------------------------------
+  if (realPower == 0) // Si on est neutre sur la consommation EDF
+  {
+    delay(5000); // une fois au point d'équilibre injection / consomation , on fige le système pendant 5 secondes
+  }
 
-
+  //------------------------------------------------------------------------------------------------------------
 
 }
+
+
+
 
