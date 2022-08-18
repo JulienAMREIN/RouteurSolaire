@@ -52,33 +52,35 @@ void loop()
   Serial.println(valeurLedDimmer);
 
   //------------------------------------------------------------------------------------------------------------
-  if (realPower > 0) // Si on consomme du courant depuis EDF, on diminue la puissance autorisée dans le dimmer
+  if (realPower > 0)                                     // Si on consomme du courant depuis EDF
   {
-    if(valeurLedDimmer > 0)
+    if(valeurLedDimmer > 0)                              // Et si on est pas déja à la valeur minimum du dimmer
     {
-      valeurLedDimmer -= 1;
-      analogWrite(ledPin, valeurLedDimmer);
+      valeurLedDimmer -= 1;                              // On diminue la luminosité de la led qui controle le dimmer
+      analogWrite(ledPin, valeurLedDimmer);              // Et donc on diminue la puissance autorisée dans le dimmer
     }
   }
 
-
-  if (realPower < 0) // Si on injecte du courant vers EDF,on augmente la puissance autorisée dans le dimmer
+  if (realPower < 0)                                     // Si on injecte du courant vers EDF
   {
-    if(valeurLedDimmer <= valeurMaximumLed)
+    if(valeurLedDimmer <= valeurMaximumLed)              // Et si on est pas déja à la valeurMaximumLed
     {
-      valeurLedDimmer += 1;
-      analogWrite(ledPin, valeurLedDimmer);
+      valeurLedDimmer += 1;                              // On augmente la luminosité de la led qui controle le dimmer
+      analogWrite(ledPin, valeurLedDimmer);              // Et donc on augmente la puissance autorisée dans le dimmer
     }
   }
 
-  if (realPower == 0) // Si on est neutre sur la consommation EDF
-  {
-    delay(5000); // une fois au point d'équilibre injection / consomation , on fige le système pendant 5 secondes
+  if (realPower == 0)                                    // Si on est neutre sur la consommation EDF
+  {                                                      // cela signifie qu'on est au point d'équilibre injection / consomation
+    valeurLedDimmer -= 1;                                // On diminue la luminosité de la led qui controle le dimmer d'un cran pour temporiser les variations densoleillement
+    analogWrite(ledPin, valeurLedDimmer);                // Et donc on diminue la puissance autorisée dans le dimmer
+    delay(5000);                                         // Puis on fige le système pendant 5 secondes pour limiter les variations intempestives (A tester pour validation)
   }
 
   //------------------------------------------------------------------------------------------------------------
 
 }
+
 
 
 
