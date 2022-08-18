@@ -5,6 +5,7 @@ EnergyMonitor emon1;
 byte valeurLedDimmer = 0;                                 // Variable de la valeur de sortie sur la pin "ledPin" en PWM pour faire varier l'intensité lumineuse et piloter le dimmer de 0 à 255
 byte valeurMaximumLed = 25;                               // Variable pour définir l'amplitude maximum de la lumière de la led qui pilote le dimmer
 byte ledPin = 9;                                          // Variable pour déterminer la pin de branchement de la led en PWM
+byte statusCourantLed = 0;                                // 0= initial 1=baisse de la luminositée de la led 2=augmentation de la luminositée de la led
 
 void setup()
 {  
@@ -80,6 +81,7 @@ void loop()
   //------------------------------------------------------------------------------------------------------------
 
 }
+
 
 
 
