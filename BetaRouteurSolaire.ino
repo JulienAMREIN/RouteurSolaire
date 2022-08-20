@@ -1,8 +1,10 @@
 // Routeur Solaire - V0.1 - Julien AMREIN, Licence GNU GPL V3
 
+// La résistance testée sur le dispositif doit etre au minimum de 1000 ohms
+
 #include "EmonLib.h"
 EnergyMonitor emon1;
-byte valeurLedDimmer = 0;                                 // Variable de la valeur de sortie sur la pin "ledPin" en PWM pour faire varier l'intensité lumineuse et piloter le dimmer de 0 à 255
+int valeurLedDimmer = 0;                                 // Variable de la valeur de sortie sur la pin "ledPin" en PWM pour faire varier l'intensité lumineuse et piloter le dimmer de 0 à 255
 byte valeurMaximumLed = 25;                               // Variable pour définir l'amplitude maximum de la lumière de la led qui pilote le dimmer
 byte ledPin = 9;                                          // Variable pour déterminer la pin de branchement de la led en PWM
 byte statusCourantLed = 0;                                // 0= initial 1=baisse de la luminositée de la led 2=augmentation de la luminositée de la led
@@ -57,8 +59,10 @@ void loop()
   {
     if(valeurLedDimmer > 0)                              // Et si on est pas déja à la valeur minimum du dimmer
     {
-      valeurLedDimmer -= 1;                              // On diminue la luminosité de la led qui controle le dimmer
+      valeurLedDimmer -= 3;                              // On diminue la luminosité de la led qui controle le dimmer
+      if(valeurLedDimmer < 0){valeurLedDimmer = 0;}      // On refuse une valeur négative.
       analogWrite(ledPin, valeurLedDimmer);              // Et donc on diminue la puissance autorisée dans le dimmer
+          delay(2000);
     }
   }
 
@@ -73,9 +77,10 @@ void loop()
 
   if (realPower == 0)                                    // Si on est neutre sur la consommation EDF
   {                                                      // cela signifie qu'on est au point d'équilibre injection / consomation
-    valeurLedDimmer -= 1;                                // On diminue la luminosité de la led qui controle le dimmer d'un cran pour temporiser les variations densoleillement
+    valeurLedDimmer -= 3;                                // On diminue la luminosité de la led qui controle le dimmer d'un cran pour temporiser les variations densoleillement
+          if(valeurLedDimmer < 0){valeurLedDimmer = 0;}      // On refuse une valeur négative.
     analogWrite(ledPin, valeurLedDimmer);                // Et donc on diminue la puissance autorisée dans le dimmer
-    delay(5000);                                         // Puis on fige le système pendant 5 secondes pour limiter les variations intempestives (A tester pour validation)
+    delay(2000);                                         // Puis on fige le système pendant 5 secondes pour limiter les variations intempestives (A tester pour validation)
   }
 
   //------------------------------------------------------------------------------------------------------------
