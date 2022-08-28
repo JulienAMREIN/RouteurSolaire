@@ -6,5 +6,5 @@ Routeur solaire minimaliste et open source sur une base d'Atmega 328P
 
 
 -Version 3 
- (A venir):   <li><ul>Rectification des tracés de circuits,</ul> <ul>optimisation de l'encombrement sur la base de la version 2,</ul> <ul>intégration du photo-régulateur sur la carte</ul></li>
+ (A venir):   <ul><li>Rectification des tracés de circuits,</li> <li>optimisation de l'encombrement sur la base de la version 2,</li> <li>intégration du photo-régulateur sur la carte</li></ul>
 
