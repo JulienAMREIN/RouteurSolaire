@@ -1,14 +1,22 @@
 // Routeur Solaire - V0.1 - Julien AMREIN, Licence GNU GPL V3
 
-// La résistance testée sur le dispositif doit etre au minimum de 1000 ohms
+// La résistance testée sur le dispositif doit etre au minimum de [33 000 ohms] pour le photo-régulateur DIY
 
 #include "EmonLib.h"
+
 EnergyMonitor emon1;
-int valeurLedDimmer = 0;                                  // Variable de la valeur de sortie sur la pin "ledPin" en PWM pour faire varier l'intensité lumineuse et piloter le dimmer de 0 à 255
-byte valeurMaximumLed = 25;                               // Variable pour définir l'amplitude maximum de la lumière de la led qui pilote le dimmer
+
 byte ledPin = 9;                                          // Variable pour déterminer la pin de branchement de la led en PWM
+byte valeurLedDimmer = 0;                                  // Variable de la valeur de sortie sur la pin "ledPin" en PWM pour faire varier l'intensité lumineuse et piloter le dimmer de 0 à 255
 byte statusCourantLed = 0;                                // 0= initial   1=était en conso EDF   2=était en injection EDF
+
 int delayChangementEtat = 5000;                           // Temps de maintient de la luminosité de la led lord d'une bascule injection/conso et conso/injection
+byte valeurMaximumLed = 25;                               // Variable pour définir l'amplitude maximum de la lumière de la led qui pilote le dimmer
+byte valeurIncrementationLed = 1;                         // Le pas d'incrémentation pour augmenter la luminosité de la LED et se rapprocher du seuil consomation depuis EDF
+byte valeurDecrementationLed = 2;                         // Le pas de décrémentation pour diminuer la luminosité de la LED et stopper rapidement la consomation depuis EDF
+
+
+
 
 void setup()
 {  
@@ -35,24 +43,32 @@ void loop()
 
   if (realPower > 0)                                      // Si on consomme du courant depuis EDF
   {
-    Serial.print("On consomme du courant depuis EDF     ");
+    Serial.print("On consomme du courant depuis EDF               ");
   }
 
   if (realPower < 0)                                      // Si on injecte du courant vers EDF
   {
-    Serial.print("On injecte du courant vers EDF        ");
+    Serial.print("On injecte du courant vers EDF                  ");
   }
 
   if (realPower == 0)                                     // Si on est neutre sur la consommation EDF
   {
-    Serial.print("Point d equilibre par rapport a EDF   ");
+    Serial.print("Point d equilibre par rapport a EDF             ");
   }
 
+/*
+  Serial.print("statut bescule LED: ");
+  Serial.print(statusCourantLed);
+
+  Serial.print("          Signe: ");  
   Serial.print(realPower);	                          // Puissance apparente: signée positif/négatif
-  Serial.print(" signe          ");
+  
+  Serial.print("          ");
   Serial.print(Irms);
-  Serial.print(" Amperes        ");
-  Serial.print(" valeur de la led");
+  Serial.print(" Amperes          ");
+*/
+
+  Serial.print(" valeur de la led: ");
   Serial.println(valeurLedDimmer);
 
   // On Consomme de l'électricité------------------------------------------------------------------------------------------------------------
@@ -60,9 +76,9 @@ void loop()
   {
     if(valeurLedDimmer > 0)                              // Et si la LED du dimmer est allumée
     {                                                    // ALORS
-      valeurLedDimmer -= 3;                              // On diminue la valeur de la luminosité de la led qui controle le dimmer de 3 crans
+      valeurLedDimmer -= valeurDecrementationLed;        // On diminue la valeur de la variable de luminosité de la led qui controle le dimmer d'une valeur de variable décrémentation
 
-      if(valeurLedDimmer < 0)                            // On refuse une valeur négative,en attribuant la valeur 0 le cas echeant.
+      if(valeurLedDimmer < 0)                            // On refuse une valeur négative pour la variable "valeurLedDimmer" en attribuant la valeur 0 le cas echeant.
       {
         valeurLedDimmer = 0;
       }
@@ -92,7 +108,7 @@ void loop()
 
     if(valeurLedDimmer < valeurMaximumLed)               // Et si on est inferieur à la valeurMaximumLed
     {
-      valeurLedDimmer += 1;                              // On augmente la valeur de la luminosité de la led qui controle le dimmer d'un cran
+      valeurLedDimmer += valeurIncrementationLed;        // On augmente la valeur de la variable de luminosité de la led qui controle le dimmer d'une valeur de variable incrémentation
       analogWrite(ledPin, valeurLedDimmer);              // Et donc on fait augmenter la puissance autorisée dans le dimmer en montant la lumière émise par la LED
     }
 
@@ -110,7 +126,7 @@ void loop()
 
   if (realPower == 0)                                    // Si on est neutre sur la consommation EDF
   {                                                      // cela signifie qu'on est au point d'équilibre injection / consomation
-    valeurLedDimmer -= 1;                                // On diminue la luminosité de la led qui controle le dimmer de X crans pour temporiser les variations densoleillement
+    valeurLedDimmer -= valeurDecrementationLed;          // On diminue la luminosité de la led qui controle le dimmer de X crans pour temporiser les variations densoleillement
     if(valeurLedDimmer < 0)                              // On refuse une valeur négative,en attribuant la valeur 0 le cas echeant.
     {
       valeurLedDimmer = 0;
