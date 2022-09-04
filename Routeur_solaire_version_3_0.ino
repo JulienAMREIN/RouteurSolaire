@@ -11,9 +11,9 @@ byte valeurLedDimmer = 0;                                  // Variable de la val
 byte statusCourantLed = 0;                                // 0= initial   1=était en conso EDF   2=était en injection EDF
 
 int delayChangementEtat = 5000;                           // Temps de maintient de la luminosité de la led lord d'une bascule injection/conso et conso/injection
-byte valeurMaximumLed = 25;                               // Variable pour définir l'amplitude maximum de la lumière de la led qui pilote le dimmer
+byte valeurMaximumLed = 30;                               // Variable pour définir l'amplitude maximum de la lumière de la led qui pilote le dimmer
 byte valeurIncrementationLed = 1;                         // Le pas d'incrémentation pour augmenter la luminosité de la LED et se rapprocher du seuil consomation depuis EDF
-byte valeurDecrementationLed = 2;                         // Le pas de décrémentation pour diminuer la luminosité de la LED et stopper rapidement la consomation depuis EDF
+byte valeurDecrementationLed = 1;                         // Le pas de décrémentation pour diminuer la luminosité de la LED et stopper rapidement la consomation depuis EDF
 
 
 
@@ -30,7 +30,8 @@ void setup()
 void loop()
 {
   //------------------------------------------------------------------------------------------------------------Calculs EmonLib
-
+  
+  delay(1000);
   emon1.calcVI(20,500);                                   // Calculate all. No.of half wavelengths (crossings), time-out
 
   float realPower       = emon1.realPower;                //extract Real Power into variable
@@ -38,42 +39,22 @@ void loop()
   float powerFActor     = emon1.powerFactor;              //extract Power Factor into Variable
   float supplyVoltage   = emon1.Vrms;                     //extract Vrms into Variable
   float Irms            = emon1.Irms;                     //extract Irms into Variable
-
-  //------------------------------------------------------------------------------------------------------------Affichage sur le moniteur série pour controle sera effacé sur la version finale
-
-  if (realPower > 0)                                      // Si on consomme du courant depuis EDF
-  {
-    Serial.print("On consomme du courant depuis EDF               ");
-  }
-
-  if (realPower < 0)                                      // Si on injecte du courant vers EDF
-  {
-    Serial.print("On injecte du courant vers EDF                  ");
-  }
-
-  if (realPower == 0)                                     // Si on est neutre sur la consommation EDF
-  {
-    Serial.print("Point d equilibre par rapport a EDF             ");
-  }
-
-/*
-  Serial.print("statut bescule LED: ");
-  Serial.print(statusCourantLed);
-
-  Serial.print("          Signe: ");  
-  Serial.print(realPower);	                          // Puissance apparente: signée positif/négatif
-  
-  Serial.print("          ");
-  Serial.print(Irms);
-  Serial.print(" Amperes          ");
-*/
-
-  Serial.print(" valeur de la led: ");
-  Serial.println(valeurLedDimmer);
-
+ 
   // On Consomme de l'électricité------------------------------------------------------------------------------------------------------------
+  
   if (realPower > 0)                                     // Si on consomme du courant depuis EDF
   {
+
+    if(statusCourantLed == 2)                    // Et si avant on injectai de l'électricité depuis EDF
+    {                                            // Alors
+      Serial.println("----------------------------------------------------------");
+      Serial.print("Notification:   <BASCULE>    INJECTION >>> CONSOMMATION          ");
+      Serial.println(valeurLedDimmer);
+      Serial.println("----------------------------------------------------------");
+    }
+    Serial.print(valeurLedDimmer);
+    Serial.println("          On consomme du courant depuis EDF               "); 
+
     if(valeurLedDimmer > 0)                              // Et si la LED du dimmer est allumée
     {                                                    // ALORS
       valeurLedDimmer -= valeurDecrementationLed;        // On diminue la valeur de la variable de luminosité de la led qui controle le dimmer d'une valeur de variable décrémentation
@@ -94,17 +75,27 @@ void loop()
 
   }
 
-
   // On Injecte de l'électricité------------------------------------------------------------------------------------------------------------
-
 
   if (realPower < 0)                                     // Si on injecte du courant vers EDF
   {
 
     if(statusCourantLed == 1)                            // Et si avant on consommait de l'électricité depuis EDF
     {                                                    // Alors
+      Serial.println("----------------------------------------------------------");
+      Serial.print("Notification:   <BASCULE>    CONSOMMATION >>> INJECTION          ");
+      Serial.println(valeurLedDimmer);
+      Serial.println("----------------------------------------------------------");
+
+
       delay(delayChangementEtat);                        // on reste X secondes avant de continuer dans le code
     }
+
+
+    Serial.print(valeurLedDimmer);
+    Serial.println("          On injecte du courant vers EDF               ");
+
+
 
     if(valeurLedDimmer < valeurMaximumLed)               // Et si on est inferieur à la valeurMaximumLed
     {
@@ -123,9 +114,9 @@ void loop()
 
   // On est neutre en conso. ------------------------------------------------------------------------------------------------------------
 
-
   if (realPower == 0)                                    // Si on est neutre sur la consommation EDF
   {                                                      // cela signifie qu'on est au point d'équilibre injection / consomation
+    Serial.print("Point d equilibre par rapport a EDF             ");
     valeurLedDimmer -= valeurDecrementationLed;          // On diminue la luminosité de la led qui controle le dimmer de X crans pour temporiser les variations densoleillement
     if(valeurLedDimmer < 0)                              // On refuse une valeur négative,en attribuant la valeur 0 le cas echeant.
     {
@@ -138,6 +129,7 @@ void loop()
   //------------------------------------------------------------------------------------------------------------
 
 }
+
 
 
 
